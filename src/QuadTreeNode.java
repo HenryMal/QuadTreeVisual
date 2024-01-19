@@ -8,7 +8,7 @@ public class QuadTreeNode {
 	// define rectangle
 	// these are known as NODES
 	public double x;
-	public double y;
+	public double y;	
 	public double width;
 	public double height;
 	

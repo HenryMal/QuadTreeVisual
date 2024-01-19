@@ -11,13 +11,22 @@ public class Point {
 	public double x;
 	public double y;
 	
+	public double xVelocity;
+	public double yVelocity;
+	
 	public double size;
 	
 	public Point(double x, double y) {
 		this.x = x;
 		this.y = y;
 		
-		size = 10.0;
+		this.xVelocity = 0.1;
+		this.yVelocity = 0.1;
+		
+		if (Math.random() > 0.5) xVelocity *= -1;
+		if (Math.random() > 0.5) yVelocity *= -1;
+		
+		this.size = 10.0;
 	}
 	
 	public void render(Graphics graphics) {
@@ -31,5 +40,11 @@ public class Point {
 		graphics2D.fill(point);
 		
 	}
+	
+	public void update() {
+		x += xVelocity;
+		y += yVelocity;
+	}
+	
 
 }

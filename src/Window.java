@@ -11,6 +11,7 @@ public class Window implements Runnable {
 	
 	public JFrame window;
 	public Canvas canvas;
+	public JButton button;
 	public BufferStrategy bufferStrategy;
 	
 	public int width;
@@ -20,6 +21,7 @@ public class Window implements Runnable {
 	public double yMouse;
 	
 	public boolean running;
+	public boolean freeze;
 	
 	List<Point> points = new ArrayList<Point>();
 	List<Point> toBeRendered = new ArrayList<Point>();
@@ -30,8 +32,9 @@ public class Window implements Runnable {
 		
 		width = (int) dimension.getWidth();
 		height = (int) dimension.getHeight();
-		
 		window = new JFrame("Quadtree visualization");
+		
+		freeze = false;
 		
 		
 		// to prevent lag on all machines when drawing shit.
@@ -55,10 +58,17 @@ public class Window implements Runnable {
             	
                 Point point = new Point(xMouse, yMouse);
                 points.add(point);
-                
+
     			quadtree.insert(point);
             }
             
+		});
+		
+		button = new JButton("toggle freeze");
+		button.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+            	freeze = !freeze;
+            }
 		});
 		
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -67,7 +77,9 @@ public class Window implements Runnable {
 		canvas.setPreferredSize(new Dimension(width, height));
 		canvas.setSize(new Dimension(width, height));
 		
-		window.add(canvas);
+		window.setLayout(new BorderLayout());
+		window.add(canvas, BorderLayout.CENTER);
+		window.add(button, BorderLayout.NORTH);
 		window.pack();
 		window.setVisible(true);
 		canvas.setVisible(true);
@@ -105,6 +117,8 @@ public class Window implements Runnable {
 		// TODO Auto-generated method stub
 		while(running) {
 			transfer();
+			movePoints();
+			bouncePoints();
 			render();
 		}
 		
@@ -122,8 +136,43 @@ public class Window implements Runnable {
 			return;
 		}
 		
-		Point lastPoint = points.get(points.size() - 1);
-		toBeRendered.add(lastPoint);
+		toBeRendered.clear();
+		
+		for(int i = 0; i < points.size(); i++) {
+			toBeRendered.add(points.get(i));
+		}
+	}
+	
+	public void bouncePoints() {
+		
+		// checking if they ever go outta bounds
+		for (Point point : toBeRendered) {
+			
+			if(point.x <= 0 || point.x >= width) {
+				point.xVelocity *= -1;
+			}
+			
+			if(point.y <= 0 || point.y >= height) {
+				point.yVelocity *= -1;
+			}
+		}
+		
+	}
+	
+	public void movePoints() {
+		
+		if(freeze) {
+			return;
+		}
+		
+		// clear the quadtree
+		quadtree = new QuadTree(width, height);
+		
+		// move the points, then insert to the tree
+		for (Point point : toBeRendered) {
+			point.update();
+			quadtree.insert(point);
+		}
 	}
 
 
